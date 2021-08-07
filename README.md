@@ -1,54 +1,32 @@
 # clang-format lint action
 
-This action checks if the source code matches the .clang-format file.
+This action checks if the source code matches the `.clang-format` file.
 
 ## Inputs
 
-### `source`
+### `files`
 
-Where the source files are located.\
-Default: '.' (current folder)\
-Example: './src' or 'src test examples' for multiple.
-
-### `exclude`
-
-What folder should be excluded from format checking.\
-Default: 'none'\
-Example: './third_party' or 'third_party exclude' for multiple.
-
-Multiple exclude rules can also be put in a `.clang-format-ignore` file, which also supports comments.\
-Example:
-```
-# ignore third_party code from clang-format checks
-src/third_party/*
-src/ignored/*
-```
-
-### `extensions`
-
-What filename extensions should be used for format checking.\
-Default: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'\
-Example: 'cpp,h'
+The source files to format, provided as a regex recipe.\
+Default: `^.*\.(c|h|C|H|cpp|hpp|cc|hh|c++|h++|cxx|hxx)$`\
+Example: `^(src)\.(h|cc)$` or `^(src|test|examples)\.(h|cc)$` for multiple.
 
 ### `clangFormatVersion`
 
-What clang-format version should be used.\
-Available version are from 5 to 12.\
+The `clang-format` version to use. Versions 5 to 12 are available.\
 Default: 9\
 Example: 12
 
 ### `style`
 
-Style to use.\
-Results in the appropriate --style parameter.\
+The style to use. Passed to the `--style` parameter of `clang-format`.\
 Default: file\
 Example: chromium
 
 ### `inplace`
 
-Whether to change the files on the disk instead of writing to disk.\
-This is the same as `clang-format -i`\
-Default: False\
+Whether to change the files on the disk instead of writing to disk. This is the
+same as `clang-format -i`.\
+Default: `False`
 
 You probably want to pair this with a GitHub action (such as [`EndBug/add-and-commit`](https://github.com/EndBug/add-and-commit)) to commit the changed files. For example:
 
@@ -63,11 +41,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.12
+    - uses: PuneetMatharu/clang-format-lint-action@v0.13
       with:
-        source: '.'
-        exclude: './lib'
-        extensions: 'h,cpp,c'
+        files: ^.*\.(h|c|cc|cpp)$
         clangFormatVersion: 12
         inplace: True
     - uses: EndBug/add-and-commit@v4
@@ -92,11 +68,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.12
+    - uses: PuneetMatharu/clang-format-lint-action@v0.13
       with:
-        source: '.'
-        exclude: './third_party ./external'
-        extensions: 'h,cpp'
+        files: ^.*\.(h|c|cc|cpp)$
         clangFormatVersion: 12
         style: chromium
 ```
@@ -106,12 +80,12 @@ jobs:
 Install Docker and then run:
 
 ```bash
-docker build -t clang-format-lint github.com/DoozyX/clang-format-lint-action
+docker build -t clang-format-lint github.com/PuneetMatharu/clang-format-lint-action
 ```
 
 When the image is built, run the linting:
 
 ```bash
-docker run -it --rm --workdir /src -v $(pwd):/src clang-format-lint \
-    --clang-format-executable /clang-format/clang-format9 -r --exclude .git .
+docker run -it --rm --workdir /src -v $(pwd):/src \
+    clang-format-lint -e /clang-format/clang-format9 .
 ```

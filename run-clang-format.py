@@ -14,10 +14,11 @@ import argparse
 import codecs
 import difflib
 import errno
-import fnmatch
+from fnmatch import fnmatch
 import io
 import multiprocessing
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -42,7 +43,7 @@ class ExitStatus:
     TROUBLE = 2
 
 
-def excludes_from_file(ignore_file):
+def excludes_from_file(ignore_file: str) -> list:
     excludes = []
     try:
         with io.open(ignore_file, 'r', encoding='utf-8') as f:
@@ -61,35 +62,27 @@ def excludes_from_file(ignore_file):
     return excludes
 
 
-def list_files(files, recursive=False, extensions=None, exclude=None):
-    if extensions is None:
-        extensions = []
-    if exclude is None:
-        exclude = []
+def list_files_with_regex(root_dir: str,
+                          regex_recipe: str,
+                          excludes: list = None) -> list:
+    if excludes is None:
+        excludes = []
+
+    regex = re.compile(regex_recipe)
+
+    matching_files = []
+    for (dirpath, dirs, files) in os.walk(root_dir):
+        for fname in files:
+            fname_with_relpath = os.path.join(
+                os.path.relpath(dirpath, root_dir), fname)
+            if regex.match(fname_with_relpath):
+                matching_files.append(fname_with_relpath)
 
     out = []
-    for file in files:
-        if recursive and os.path.isdir(file):
-            for dirpath, dnames, fnames in os.walk(file):
-                fpaths = [os.path.join(dirpath, fname) for fname in fnames]
-                for pattern in exclude:
-                    # os.walk() supports trimming down the dnames list
-                    # by modifying it in-place,
-                    # to avoid unnecessary directory listings.
-                    dnames[:] = [
-                        x for x in dnames
-                        if
-                        not fnmatch.fnmatch(os.path.join(dirpath, x), pattern)
-                    ]
-                    fpaths = [
-                        x for x in fpaths if not fnmatch.fnmatch(x, pattern)
-                    ]
-                for f in fpaths:
-                    ext = os.path.splitext(f)[1][1:]
-                    if ext in extensions:
-                        out.append(f)
-        else:
-            out.append(file)
+    for pattern in excludes:
+        for fpath in matching_files:
+            if not fnmatch(fpath, pattern):
+                out.append(fpath)
     return out
 
 
@@ -252,59 +245,52 @@ def split_list_arg(arg):
 
 
 def main():
+    # Run "python3 run-clang-format.py -h" to view the usage of this script
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        '-e',
         '--clang-format-executable',
         metavar='EXECUTABLE',
         help='path to the clang-format executable',
-        default='clang-format')
+        default='clang-format'
+    )
     parser.add_argument(
-        '--extensions',
-        help='comma separated list of file extensions (default: {})'.format(
-            DEFAULT_EXTENSIONS),
-        default=DEFAULT_EXTENSIONS)
-    parser.add_argument(
-        '-r',
-        '--recursive',
-        action='store_true',
-        help='run recursively over directories')
-    parser.add_argument('files', metavar='file', nargs='+')
+        'files',
+        metavar='file',
+        nargs='+'
+    )
     parser.add_argument(
         '-q',
         '--quiet',
         action='store_true',
-        help="disable output, useful for the exit code")
+        help="disable output, useful for the exit code"
+    )
     parser.add_argument(
         '-j',
         metavar='N',
         type=int,
         default=0,
         help='run N clang-format jobs in parallel'
-        ' (default number of cpus + 1)')
+        ' (default number of cpus + 1)'
+    )
     parser.add_argument(
         '--color',
         default='auto',
         choices=['auto', 'always', 'never'],
-        help='show colored diff (default: auto)')
-    parser.add_argument(
-        '-e',
-        '--exclude',
-        metavar='PATTERN',
-        action='append',
-        default=[],
-        help='exclude paths matching the given glob-like pattern(s)'
-        ' from recursive search')
+        help='show colored diff (default: auto)'
+    )
     parser.add_argument(
         '--style',
         help='Formatting style to use (default: file)',
-        default='file')
+        default='file'
+    )
     parser.add_argument(
         '-i',
         '--inplace',
         type=lambda x: bool(strtobool(x)),
         default=False,
-        help='Just fix files (`clang-format -i`) instead of returning a diff')
-
+        help='Just fix files (`clang-format -i`) instead of returning a diff'
+    )
     args = parser.parse_args()
 
     # use default signal handling, like diff return SIGINT value on ^C
@@ -346,20 +332,22 @@ def main():
     retcode = ExitStatus.SUCCESS
 
     excludes = excludes_from_file(DEFAULT_CLANG_FORMAT_IGNORE)
-    excludes.extend(split_list_arg(args.exclude))
+    excludes.append(".git")
 
-    files = list_files(
-        split_list_arg(args.files),
-        recursive=args.recursive,
-        exclude=excludes,
-        extensions=args.extensions.split(','))
+    root_dir = os.getcwd()
+    regex_arg = args.files[-1]
+    files = list_files_with_regex(
+        root_dir=root_dir,
+        regex_recipe=regex_arg,
+        excludes=excludes
+    )
 
     if not files:
         print_trouble(parser.prog, 'No files found', use_colors=colored_stderr)
         return ExitStatus.TROUBLE
 
     if not args.quiet:
-      print('Processing %s files: %s' % (len(files), ', '.join(files)))
+        print('Processing %s files: %s' % (len(files), ', '.join(files)))
 
     njobs = args.j
     if njobs == 0:
