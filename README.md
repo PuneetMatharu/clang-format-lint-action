@@ -12,9 +12,32 @@ Example: `^(src)\.(h|cc)$` or `^(src|test|examples)\.(h|cc)$` for multiple.
 
 ### `clangFormatVersion`
 
-The `clang-format` version to use. Versions 5 to 12 are available.\
+The `clang-format` version to use. The following versions are available:
+
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11(11.0.0)
+- 11.0.0
+- 11.1.0
+- 12(12.0.1)
+- 12.0.0
+- 12.0.1
+- 13(13.0.0)
+- 13.0.0
+- 14(14.0.0)
+- 14.0.0
+- 15(15.0.2)
+- 15.0.2
+- 16(16.0.3)
+- 16.0.0
+- 16.0.3
+
 Default: 9\
-Example: 12
+Example: 15
 
 ### `style`
 
@@ -38,20 +61,19 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Run clang-format
       uses: PuneetMatharu/clang-format-lint-action@v0.13
       with:
         files: ^.*\.(h|c|cc|cpp)$
-        clangFormatVersion: 12
+        clangFormatVersion: 16.0.3
         inplace: True
 
     - name: Commit changes
-      uses: stefanzweifel/git-auto-commit-action@v4
+      uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_user_name: clang-format-bot
         commit_message: 'Automated commit of clang-format modifications.'
@@ -67,17 +89,22 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Run clang-format
       uses: PuneetMatharu/clang-format-lint-action@v0.13
       with:
         files: ^.*\.(h|c|cc|cpp)$
-        clangFormatVersion: 12
+        clangFormatVersion: 16.0.3
         style: chromium
+
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_user_name: clang-format-bot
+        commit_message: 'Automated commit of clang-format modifications.'
 ```
 
 ## Run locally
@@ -91,6 +118,5 @@ docker build -t clang-format-lint github.com/PuneetMatharu/clang-format-lint-act
 When the image is built, run the linting:
 
 ```bash
-docker run -it --rm --workdir /src -v $(pwd):/src \
-    clang-format-lint -e /clang-format/clang-format9 .
+docker run -it --rm --workdir /src -v $(pwd):/src clang-format-lint -e /clang-format/clang-format16.0.3 .
 ```

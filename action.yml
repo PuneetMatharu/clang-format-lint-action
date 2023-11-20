@@ -1,32 +1,34 @@
-name: 'clang-format lint'
-author: 'Slobodan Kletnikov (DoozyX)'
-description: 'Github Action that checks if code is formatted correctly using clang-format'
+name: "clang-format lint"
+author: "Slobodan Kletnikov (DoozyX)"
+description: "Github Action that checks if code is formatted correctly using clang-format"
 branding:
-  icon: 'align-left'
-  color: 'green'
+  icon: "align-left"
+  color: "green"
 inputs:
   files:
-    description: 'Source folder to check formatting'
+    description: "Source folder to check formatting"
     required: false
     default: ^.*\.(c|h|C|H|cpp|hpp|cc|hh|c++|h++|cxx|hxx)$
   clangFormatVersion:
-    description: 'Version of clang-format'
+    description: "Version of clang-format"
     required: false
-    default: '12'
+    default: "12"
   style:
-    description: 'Formatting style to use'
+    description: "Formatting style to use"
     required: false
-    default: 'file'
+    default: "file"
   inplace:
-    description: 'Just fix files (`clang-format -i`) instead of returning a diff'
+    description: "Just fix files (`clang-format -i`) instead of returning a diff"
     required: false
     default: False
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
   args:
     - --clang-format-executable
     - /clang-format/clang-format${{ inputs.clangFormatVersion }}
+    - --color
+    - always
     - --style
     - ${{ inputs.style }}
     - --inplace
