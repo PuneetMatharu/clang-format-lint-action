@@ -12,7 +12,7 @@ inputs:
   clangFormatVersion:
     description: "Version of clang-format"
     required: false
-    default: "12"
+    default: '18'
   style:
     description: "Formatting style to use"
     required: false

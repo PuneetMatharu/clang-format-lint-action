@@ -12,31 +12,10 @@ Example: `^(src)\.(h|cc)$` or `^(src|test|examples)\.(h|cc)$` for multiple.
 
 ### `clangFormatVersion`
 
-The `clang-format` version to use. The following versions are available:
-
-- 5
-- 6
-- 7
-- 8
-- 9
-- 10
-- 11(11.0.0)
-- 11.0.0
-- 11.1.0
-- 12(12.0.1)
-- 12.0.0
-- 12.0.1
-- 13(13.0.0)
-- 13.0.0
-- 14(14.0.0)
-- 14.0.0
-- 15(15.0.2)
-- 15.0.2
-- 16(16.0.3)
-- 16.0.0
-- 16.0.3
-
-Default: 9\
+What clang-format version should be used.\
+Available version are\
+5,6,7,8,9,10,11(11.0.0),11.0.0, 11.1.0, 12(12.0.1), 12.0.0, 12.0.1, 13(13.0.0), 13.0.0, 14(14.0.0), 14.0.0, 15(15.0.2), 15.0.2, 16(16.0.3), 16.0.0, 16.0.3, 17(17.0.4), 17.0.4, 18(18.1.8), 18.1.3, 18.1.8\
+Default: 18\
 Example: 15
 
 ### `style`
@@ -66,10 +45,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run clang-format
-      uses: PuneetMatharu/clang-format-lint-action@v0.13
+      uses: PuneetMatharu/clang-format-lint-action@v0.17
       with:
         files: ^.*\.(h|c|cc|cpp)$
-        clangFormatVersion: 16.0.3
+        clangFormatVersion: 18
         inplace: True
 
     - name: Commit changes
@@ -94,10 +73,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run clang-format
-      uses: PuneetMatharu/clang-format-lint-action@v0.13
+      uses: PuneetMatharu/clang-format-lint-action@v0.17
       with:
         files: ^.*\.(h|c|cc|cpp)$
-        clangFormatVersion: 16.0.3
+        clangFormatVersion: 18
         style: chromium
 
     - name: Commit changes
@@ -120,3 +99,5 @@ When the image is built, run the linting:
 ```bash
 docker run -it --rm --workdir /src -v $(pwd):/src clang-format-lint -e /clang-format/clang-format16.0.3 .
 ```
+
+Actions clion format binary are from https://github.com/muttleyxd/clang-tools-static-binaries
