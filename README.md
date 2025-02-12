@@ -4,13 +4,13 @@ This action checks if the source code matches the `.clang-format` file.
 
 ## Inputs
 
-### `files`
+### `regex`
 
 The source files to format, provided as a regex recipe.\
 Default: `^.*\.(c|h|C|H|cpp|hpp|cc|hh|c++|h++|cxx|hxx)$`\
 Example: `^(src)\.(h|cc)$` or `^(src|test|examples)\.(h|cc)$` for multiple.
 
-### `clangFormatVersion`
+### `version`
 
 What clang-format version should be used.\
 Available version are\
@@ -32,7 +32,7 @@ Default: `False`
 
 You probably want to pair this with a GitHub action (such as [`stefanzweifel/git-auto-commit-action`](https://github.com/stefanzweifel/git-auto-commit-action)) to commit the changed files. For example:
 
-```yml
+```yaml
 name: Run clang-format Linter
 
 on: [push]
@@ -45,10 +45,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run clang-format
-      uses: PuneetMatharu/clang-format-lint-action@v0.17
+      uses: PuneetMatharu/clang-format-lint-action@v0.19
       with:
-        files: ^.*\.(h|c|cc|cpp)$
-        clangFormatVersion: 18
+        regex: ^.*\.(h|c|cc|cpp)$
+        version: 18
         inplace: True
 
     - name: Commit changes
@@ -60,7 +60,7 @@ jobs:
 
 ## Example usage
 
-```yml
+```yaml
 name: test-clang-format
 
 on: [push]
@@ -73,10 +73,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run clang-format
-      uses: PuneetMatharu/clang-format-lint-action@v0.17
+      uses: PuneetMatharu/clang-format-lint-action@v0.19
       with:
-        files: ^.*\.(h|c|cc|cpp)$
-        clangFormatVersion: 18
+        regex: ^.*\.(h|c|cc|cpp)$
+        version: 18
         style: chromium
 
     - name: Commit changes
@@ -86,18 +86,4 @@ jobs:
         commit_message: 'Automated commit of clang-format modifications.'
 ```
 
-## Run locally
-
-Install Docker and then run:
-
-```bash
-docker build -t clang-format-lint github.com/PuneetMatharu/clang-format-lint-action
-```
-
-When the image is built, run the linting:
-
-```bash
-docker run -it --rm --workdir /src -v $(pwd):/src clang-format-lint -e /clang-format/clang-format16.0.3 .
-```
-
-Actions clion format binary are from https://github.com/muttleyxd/clang-tools-static-binaries
+The `clang-format` binaries have been taken from <https://github.com/muttleyxd/clang-tools-static-binaries>

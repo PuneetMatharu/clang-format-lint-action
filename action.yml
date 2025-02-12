@@ -1,36 +1,26 @@
-name: "clang-format lint"
-author: "Slobodan Kletnikov (DoozyX)"
-description: "Github Action that checks if code is formatted correctly using clang-format"
-branding:
-  icon: "align-left"
-  color: "green"
+name: "Clang Format Lint Action"
+author: "Puneet Matharu"
+description: "Run clang-format on C++ files"
 inputs:
-  files:
-    description: "Source folder to check formatting"
+  regex:
+    description: "Regex recipe for identifying C++ source files."
     required: false
     default: ^.*\.(c|h|C|H|cpp|hpp|cc|hh|c++|h++|cxx|hxx)$
-  clangFormatVersion:
-    description: "Version of clang-format"
+  version:
+    description: "Clang-format version (e.g., '12', '14')."
     required: false
-    default: '18'
+    default: "18"
   style:
-    description: "Formatting style to use"
+    description: "Formatting style."
     required: false
     default: "file"
   inplace:
-    description: "Just fix files (`clang-format -i`) instead of returning a diff"
+    description: "Modify files in place."
     required: false
-    default: False
+    default: "false"
 runs:
-  using: "docker"
-  image: "Dockerfile"
-  args:
-    - --clang-format-executable
-    - /clang-format/clang-format${{ inputs.clangFormatVersion }}
-    - --color
-    - always
-    - --style
-    - ${{ inputs.style }}
-    - --inplace
-    - ${{ inputs.inplace }}
-    - ${{ inputs.files }}
+  using: "composite"
+  steps:
+    - name: Run clang-format
+      shell: bash
+      run: python3 ${{ github.action_path }}/entrypoint.py --executable="${{ github.action_path }}/clang-format/clang-format${{ inputs.version }}" --style="${{ inputs.style }}" --regex="${{ inputs.regex }}" ${{ inputs.inplace == 'true' && '--inplace' || '' }}
